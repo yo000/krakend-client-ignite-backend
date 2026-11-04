@@ -23,6 +23,7 @@ import (
 
 const (
 	pluginName = "krakend-client-ignite-backend"
+	pluginVersion = "0.2"
 )
 
 var (
@@ -278,7 +279,7 @@ func (r registerer) registerClients(_ context.Context, extra map[string]interfac
 	// The config variable contains all the keys you have defined in the configuration:
 	config, _ := extra[pluginName].(map[string]interface{})
 
-	logger.Info(fmt.Sprintf("%s: Initializing connection to ignite", pluginName))
+	logger.Info(fmt.Sprintf("%s: version %s, Initializing connection to ignite", pluginName, pluginVersion))
 	// Initialize ignite connection pool
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 	wrapper, err := newDbWrapper(config, ctx)
