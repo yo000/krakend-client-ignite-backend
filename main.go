@@ -23,7 +23,7 @@ import (
 
 const (
 	pluginName = "krakend-client-ignite-backend"
-	pluginVersion = "0.2"
+	pluginVersion = "0.3"
 )
 
 var (
@@ -334,7 +334,7 @@ func (r registerer) registerClients(_ context.Context, extra map[string]interfac
 			}
 
 			ctx, _ := context.WithTimeout(context.Background(), 60*time.Second)
-			res, err := SelectQuerySqlWithType(wrapper, ctx, decodedQuery, tss)
+			res, err := ExecuteQueryWithType(wrapper, ctx, decodedQuery, tss)
 			if err != nil {
 				propagateError(w, decodedQuery, err, tss)
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -426,9 +426,9 @@ func validateQuery(query string) error {
 	}
 
 	switch stmt.(type) {
-		case *sqlparser.Select:
+		case *sqlparser.Select, *sqlparser.Insert, *sqlparser.Update, *sqlparser.Delete:
 			return nil
-		case *sqlparser.Insert, *sqlparser.Update, *sqlparser.Delete, *sqlparser.DDL:
+		case *sqlparser.DDL:
 			return fmt.Errorf(removeSqlParserPrefix(fmt.Sprintf("Unsupported SQL statement : %T", stmt)))
 		default:
 			return fmt.Errorf(removeSqlParserPrefix(fmt.Sprintf("Unknown SQL statement : %T", stmt)))
@@ -462,7 +462,7 @@ func openDatabase(config map[string]interface{}, ctx context.Context) (*sql.DB, 
 	return db, nil
 }
 
-func SelectQuerySqlWithType(wrapper *dbWrapper, ctx context.Context, query string, ts string) (ResultWithType, error) {
+func ExecuteQueryWithType(wrapper *dbWrapper, ctx context.Context, query string, ts string) (ResultWithType, error) {
 	var finalRes ResultWithType
 
 	rows, err := wrapper.QueryContext(ctx, query)
